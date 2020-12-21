@@ -1,0 +1,13 @@
+*		text=auto
+# テキストファイル改行指定
+*.txt		text
+*.vcproj	text eol=crlf
+*.sh		text eol=lf
+# バイナリファイル指定
+*.jpg		-text
+*.tar		-text
+*.gz		-text
+*.zip		-text
+*.lzh		-text
+*.pdf		-text
+*.wav		-text
