@@ -42,25 +42,6 @@ static const int debuglevel = 0;
 #define EOL_CRLF "\n"
 #endif
 
-typedef union _mddl_stl_vector_stat {
-    unsigned int flags;
-    struct {
-	unsigned int mem_fixed:1; /* mem_fixedを使った際の制限 */
-    } f;
-} mddl_stl_vector_stat_t;
-
-typedef struct _mddl_stl_vector_ext {
-    void *buf;
-    size_t reserved_bytes;
-    size_t num_elements;
-    size_t sizof_element;
-
-    mddl_stl_vector_stat_t stat;
-} mddl_stl_vector_ext_t;
-
-#define get_vector_ext(s) (mddl_stl_vector_ext_t*)((s)->ext)
-#define get_const_vector_ext(s) (const mddl_stl_vector_ext_t*)((s)->ext)
-
 static void *own_malloc(const size_t size);
 static void *own_mrealloc( void *const ptr, const size_t size);
 static void own_mfree( void *const ptr );
@@ -80,6 +61,27 @@ static void own_mfree( void *const ptr )
     free(ptr);
     return;
 }
+
+typedef union _mddl_stl_vector_stat {
+    unsigned int flags;
+    struct {
+	unsigned int mem_fixed:1; /* mem_fixedを使った際の制限 */
+    } f;
+} mddl_stl_vector_stat_t;
+
+typedef struct _mddl_stl_vector_ext {
+    void *buf;
+    size_t reserved_bytes;
+    size_t num_elements;
+    size_t sizof_element;
+
+    mddl_stl_vector_stat_t stat;
+} mddl_stl_vector_ext_t;
+
+#define get_vector_ext(s) (mddl_stl_vector_ext_t*)((s)->ext)
+#define get_const_vector_ext(s) (const mddl_stl_vector_ext_t*)((s)->ext)
+
+
 
 /**
  * @fn int mddl_stl_vector_init( mddl_stl_vector_t *const self_p, const size_t sizof_element)
