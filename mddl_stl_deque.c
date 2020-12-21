@@ -36,11 +36,7 @@ static const int debuglevel = 0;
 #endif
 #include "dbms.h"
 
-#if defined(_MDDL_DMSG_IS_UART)
 #define EOL_CRLF "\n\r"
-#else
-#define EOL_CRLF "\n"
-#endif
 
 static void *own_malloc(const size_t size);
 static void *own_mrealloc( void *const ptr, const size_t size);

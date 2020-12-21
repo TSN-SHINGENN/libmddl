@@ -1,6 +1,8 @@
 #ifndef INC_MDDL_STL_DEQUE_H
 #define INC_MDDL_STL_DEQUE_H
 
+#pragma once
+
 #include <stddef.h>
 
 typedef struct _mddl_stl_deque {

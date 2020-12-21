@@ -1,6 +1,8 @@
 #ifndef INC_MDDL_STL_VECTOR_H
 #define INC_MDDL_STL_VECTOR_H
 
+#pragma once
+
 #include <stddef.h>
 #include <stdint.h>
 
