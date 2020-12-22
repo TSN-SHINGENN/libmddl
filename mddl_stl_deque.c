@@ -20,7 +20,7 @@
 /* POSIX */
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 
@@ -39,17 +39,11 @@ static const int debuglevel = 0;
 #define EOL_CRLF "\n\r"
 
 static void *own_malloc(const size_t size);
-static void *own_mrealloc( void *const ptr, const size_t size);
 static void own_mfree( void *const ptr );
 
 static void *own_malloc(const size_t size)
 {
     return malloc(size);
-}
-
-static void *own_mrealloc( void *const ptr, const size_t size)
-{
-    return realloc( ptr, size);
 }
 
 static void own_mfree( void *const ptr )
@@ -93,7 +87,7 @@ int mddl_stl_deque_init(mddl_stl_deque_t *const self_p,
     e = (mddl_stl_deque_ext_t *)
 	own_malloc(sizeof(mddl_stl_deque_ext_t));
     if (NULL == e) {
-	DBMS1(stderr, "%s : mddl_malloc(ext) fail" EOL_CRLF, __func__);
+	DBMS1("%s : mddl_malloc(ext) fail" EOL_CRLF, __func__);
 	return EAGAIN;
     }
     memset(e, 0x0, sizeof(mddl_stl_deque_ext_t));
@@ -103,7 +97,7 @@ int mddl_stl_deque_init(mddl_stl_deque_t *const self_p,
 
     result = mddl_stl_vector_init( &e->vect, sizeof(void*));
     if( result ) {
-	DBMS1(stderr, "%s : mddl_stl_vector_init fail, strerror:%s" EOL_CRLF, __func__, strerror(result));
+	DBMS1("%s : mddl_stl_vector_init fail, strerror:%s" EOL_CRLF, __func__, strerror(result));
 	status = result;
 	goto out;
     } else {
@@ -139,26 +133,26 @@ int mddl_stl_deque_destroy(mddl_stl_deque_t *const  self_p)
 
     result = mddl_stl_deque_clear(self_p);
     if (result) {
-	DBMS1(stderr, "%s : que_clear fail" EOL_CRLF, __func__);
+	DBMS1("%s : que_clear fail" EOL_CRLF, __func__);
 	return EBUSY;
     }
 
     if(e->init.f.vect) {
 	result = mddl_stl_vector_destroy( &e->vect);
 	if(result) {
-	    DBMS1(stderr, "%s : mddl_stl_vector_init fail, strerror:%s" EOL_CRLF, __func__, strerror(result));
+	    DBMS1("%s : mddl_stl_vector_init fail, strerror:%s" EOL_CRLF, __func__, strerror(result));
 	} else {
 	    e->init.f.vect = 0;
 	}
     }
 
     if(e->init.flags) {
-	DBMS1(stderr, "%s : init.flags = 0x%08s" EOL_CRLF, __func__, e->init.flags);
+	DBMS1("%s : init.flags = 0x%08s" EOL_CRLF, __func__, e->init.flags);
 	return e->init.flags;
     }
 
     if( NULL != self_p->ext ) {
-	own_free(self_p->ext);
+	own_mfree(self_p->ext);
     }
 
     return 0;
@@ -183,7 +177,7 @@ int mddl_stl_deque_push_back(mddl_stl_deque_t *const self_p,
     mddl_stl_deque_ext_t *const e = get_stl_deque_ext(self_p);
     void *page = NULL;
 
-    DBMS3(stderr, "%s : execute" EOL_CRLF, __func__);
+    DBMS3("%s : execute" EOL_CRLF, __func__);
 
     if( NULL == el_p ) {
 	return EFAULT;
@@ -194,7 +188,7 @@ int mddl_stl_deque_push_back(mddl_stl_deque_t *const self_p,
 
     page = own_malloc(e->sizof_element);
     if (NULL == page) {
-	DBMS1(stderr, "%s : own_malloc(queitem_t) fail" EOL_CRLF, __func__);
+	DBMS1("%s : own_malloc(queitem_t) fail" EOL_CRLF, __func__);
 	status = EAGAIN;
 	goto out;
     }
@@ -204,7 +198,7 @@ int mddl_stl_deque_push_back(mddl_stl_deque_t *const self_p,
     /* キューに追加 */
     result = mddl_stl_vector_push_back( &e->vect, &page, sizeof(page));
     if(result) {
-	DBMS1(stderr, "%s : mddl_vector_push_back fail, strerror:%s" EOL_CRLF, __func__, strerror(result));
+	DBMS1("%s : mddl_vector_push_back fail, strerror:%s" EOL_CRLF, __func__, strerror(result));
 	status = result;
 	goto out;
     }
@@ -259,11 +253,11 @@ int mddl_stl_deque_pop_front(mddl_stl_deque_t *const self_p)
 
     /* エレメントを外す */
     page = *(void**)mddl_stl_vector_ptr_at( &e->vect, 0 );
-    mddl_mfree(page);
+    own_mfree(page);
 
     result = mddl_stl_vector_remove_at( &e->vect, 0);
     if(result) {
-	DBMS(stderr, "%s : mddl_stl_vector_erase fail, strerror:%s" EOL_CRLF, __func__, strerror(result));
+	DBMS("%s : mddl_stl_vector_erase fail, strerror:%s" EOL_CRLF, __func__, strerror(result));
 	return result;
     }
 
@@ -295,7 +289,7 @@ int mddl_stl_deque_pop_back(mddl_stl_deque_t *const self_p)
 
     /* エレメントを外す */
     page = *(void**)mddl_stl_vector_ptr_at( &e->vect, num );
-    mddl_free(page);
+    own_mfree(page);
 
     result = mddl_stl_vector_pop_back( &e->vect);
     if(result) {
@@ -328,7 +322,7 @@ int mddl_stl_deque_clear(mddl_stl_deque_t *const self_p)
     total = mddl_stl_vector_get_pool_cnt( &e->vect );
     for (n=0; n<total; ++n) {
 	void *page = *(void**)mddl_stl_vector_ptr_at( &e->vect, n);
-	mddl_free(page);
+	own_mfree(page);
     }
 
     /* ベクタテーブルをクリア */
@@ -426,7 +420,7 @@ int mddl_stl_deque_get_element_at(mddl_stl_deque_t *const self_p,
     }
 
     /* ページを取得 */
-    mddl_memcpy(el_p, page, e->sizof_element);
+    memcpy(el_p, page, e->sizof_element);
 
     return 0;
 }
@@ -458,11 +452,11 @@ int mddl_stl_deque_remove_at(mddl_stl_deque_t *const self_p,
     }
 
     page = *(void**)mddl_stl_vector_ptr_at( &e->vect, num );
-    mddl_free(page);
+    own_mfree(page);
 
     result = mddl_stl_vector_remove_at( &e->vect, num);
     if(result) {
-	DBMS1( stderr, "%s : mddl_stl_vector_remove_at fail, strerror:%s" EOL_CRLF, __func__, strerror(result));
+	DBMS1("%s : mddl_stl_vector_remove_at fail, strerror:%s" EOL_CRLF, __func__, strerror(result));
 	return result;
     }
     return 0;
@@ -506,7 +500,7 @@ int mddl_stl_deque_insert(mddl_stl_deque_t *const self_p,
     /* 挿入処理 */
     result = mddl_stl_vector_insert( &e->vect, num, &page, sizeof(page));
     if(result) {
-	DBMS1(stderr, "%s : mddl_stl_vector_insert fail, strerror:%s" EOL_CRLF, __func__, strerror(result));
+	DBMS1("%s : mddl_stl_vector_insert fail, strerror:%s" EOL_CRLF, __func__, strerror(result));
 	return result;
     }
 
@@ -515,7 +509,7 @@ int mddl_stl_deque_insert(mddl_stl_deque_t *const self_p,
   out:
     if (status) {
 	if (NULL != page) {
-	    own_free(page);
+	    own_mfree(page);
 	}
     }
     return status;
@@ -590,7 +584,7 @@ int mddl_stl_deque_front( mddl_stl_deque_t *const self_p, void *const el_p, cons
 
     result = mddl_stl_vector_front( &e->vect, &page, sizeof(page) );
     if(result) {
-	DBMS1( stderr, "%s : mddl_stl_vector_front fail, strerror:%s" EOL_CRLF, __func__, strerror(result));
+	DBMS1("%s : mddl_stl_vector_front fail, strerror:%s" EOL_CRLF, __func__, strerror(result));
 	return result;
     }
 
@@ -627,7 +621,7 @@ int mddl_stl_deque_back( mddl_stl_deque_t *const self_p, void *const el_p, const
 
     result = mddl_stl_vector_back( &e->vect, &page, sizeof(page) );
     if(result) {
-	DBMS1( stderr, "%s : mddl_stl_vector_back fail, strerror:%s" EOL_CRLF, __func__, strerror(result));
+	DBMS1("%s : mddl_stl_vector_back fail, strerror:%s" EOL_CRLF, __func__, strerror(result));
 	return result;
     }
 
