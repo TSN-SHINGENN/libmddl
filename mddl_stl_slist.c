@@ -18,7 +18,9 @@
  */
 
 /* POSIX */
-#include <stdio.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 
@@ -110,7 +112,7 @@ int mddl_stl_slist_init(mddl_stl_slist_t *const self_p,
     e = (mddl_stl_slist_ext_t *)
 	own_malloc(sizeof(mddl_stl_slist_ext_t));
     if (NULL == e) {
-	DBMS1(stderr, "%s : own_malloc(ext) fail" EOL_CRLF, __func__);
+	DBMS1("%s : own_malloc(ext) fail" EOL_CRLF, __func__);
 	return EAGAIN;
     }
     memset(e, 0x0, sizeof(mddl_stl_slist_ext_t));
@@ -138,7 +140,7 @@ int mddl_stl_slist_destroy(mddl_stl_slist_t *const self_p)
 
     result = mddl_stl_slist_clear(self_p);
     if (result) {
-	DBMS1(stderr, "%s : que_clear fail" EOL_CRLF, __func__);
+	DBMS1("%s : que_clear fail" EOL_CRLF, __func__);
 	return EBUSY;
     }
 
@@ -178,7 +180,7 @@ int mddl_stl_slist_push(mddl_stl_slist_t *const self_p, const void *const el_p,
 
     f = (fifoitem_t *)own_malloc(sizeof(fifoitem_t) + e->sizof_element);
     if (NULL == f) {
-	DBMS1(stderr,
+	DBMS1(
 	      "%s : own_malloc(fifoitem_t) fail" EOL_CRLF, __func__);
 	status = EAGAIN;
 	goto out;
@@ -296,7 +298,7 @@ int mddl_stl_slist_clear(mddl_stl_slist_t *const self_p)
     for (n = e->cnt; n != 0; --n) {
 	result = mddl_stl_slist_pop(self_p);
 	if (result) {
-	    DBMS1(stderr,
+	    DBMS1(
 		  "%s : mddl_stl_slist_pop[%llu] fail" EOL_CRLF, __func__, n);
 	    return -1;
 	}
@@ -458,7 +460,7 @@ int mddl_stl_slist_insert_at( mddl_stl_slist_t *const self_p, const size_t no, v
 
     f = (fifoitem_t *) own_malloc(sizeof(fifoitem_t) + e->sizof_element);
     if (NULL == f) {
-	DBMS1(stderr,
+	DBMS1(
 	      "%s : own_malloc(fifoitem_t) fail" EOL_CRLF, __func__);
 	return EAGAIN;
     }
