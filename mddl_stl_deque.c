@@ -38,18 +38,21 @@ static const int debuglevel = 0;
 
 #define EOL_CRLF "\n\r"
 
-static void *own_malloc(const size_t size);
-static void own_mfree( void *const ptr );
 
-static void *own_malloc(const size_t size)
+/* 弱いアロケータの定義 */
+void __attribute__((weak)) *mddl_malloc(const size_t size)
 {
     return malloc(size);
 }
 
-static void own_mfree( void *const ptr )
+void __attribute__((weak)) *mddl_realloc( void *const ptr, const size_t size)
+{
+    return realloc( ptr, size);
+}
+
+void __attribute__((weak)) mddl_free( void *const ptr )
 {
     free(ptr);
-    return;
 }
 
 typedef struct _mddl_stl_deque_ext {
@@ -85,7 +88,7 @@ int mddl_stl_deque_init(mddl_stl_deque_t *const self_p,
     memset(self_p, 0x0, sizeof(mddl_stl_deque_t));
 
     e = (mddl_stl_deque_ext_t *)
-	own_malloc(sizeof(mddl_stl_deque_ext_t));
+	mddl_malloc(sizeof(mddl_stl_deque_ext_t));
     if (NULL == e) {
 	DBMS1("%s : mddl_malloc(ext) fail" EOL_CRLF, __func__);
 	return EAGAIN;
@@ -152,7 +155,7 @@ int mddl_stl_deque_destroy(mddl_stl_deque_t *const  self_p)
     }
 
     if( NULL != self_p->ext ) {
-	own_mfree(self_p->ext);
+	mddl_free(self_p->ext);
     }
 
     return 0;
@@ -186,9 +189,9 @@ int mddl_stl_deque_push_back(mddl_stl_deque_t *const self_p,
 	return EINVAL;
     }
 
-    page = own_malloc(e->sizof_element);
+    page = mddl_malloc(e->sizof_element);
     if (NULL == page) {
-	DBMS1("%s : own_malloc(queitem_t) fail" EOL_CRLF, __func__);
+	DBMS1("%s : mddl_malloc(queitem_t) fail" EOL_CRLF, __func__);
 	status = EAGAIN;
 	goto out;
     }
@@ -207,7 +210,7 @@ int mddl_stl_deque_push_back(mddl_stl_deque_t *const self_p,
   out:
     if (status) {
 	if (NULL != page) {
-	    own_mfree(page);
+	    mddl_free(page);
 	}
     }
     return status;
@@ -253,7 +256,7 @@ int mddl_stl_deque_pop_front(mddl_stl_deque_t *const self_p)
 
     /* エレメントを外す */
     page = *(void**)mddl_stl_vector_ptr_at( &e->vect, 0 );
-    own_mfree(page);
+    mddl_free(page);
 
     result = mddl_stl_vector_remove_at( &e->vect, 0);
     if(result) {
@@ -289,7 +292,7 @@ int mddl_stl_deque_pop_back(mddl_stl_deque_t *const self_p)
 
     /* エレメントを外す */
     page = *(void**)mddl_stl_vector_ptr_at( &e->vect, num );
-    own_mfree(page);
+    mddl_free(page);
 
     result = mddl_stl_vector_pop_back( &e->vect);
     if(result) {
@@ -322,7 +325,7 @@ int mddl_stl_deque_clear(mddl_stl_deque_t *const self_p)
     total = mddl_stl_vector_get_pool_cnt( &e->vect );
     for (n=0; n<total; ++n) {
 	void *page = *(void**)mddl_stl_vector_ptr_at( &e->vect, n);
-	own_mfree(page);
+	mddl_free(page);
     }
 
     /* ベクタテーブルをクリア */
@@ -452,7 +455,7 @@ int mddl_stl_deque_remove_at(mddl_stl_deque_t *const self_p,
     }
 
     page = *(void**)mddl_stl_vector_ptr_at( &e->vect, num );
-    own_mfree(page);
+    mddl_free(page);
 
     result = mddl_stl_vector_remove_at( &e->vect, num);
     if(result) {
@@ -489,9 +492,9 @@ int mddl_stl_deque_insert(mddl_stl_deque_t *const self_p,
 	return EINVAL;
     }
 
-    page = own_malloc(e->sizof_element);
+    page = mddl_malloc(e->sizof_element);
     if (NULL == page) {
-	DBMS1("%s : own_malloc(page) fail" EOL_CRLF, __func__);
+	DBMS1("%s : mddl_malloc(page) fail" EOL_CRLF, __func__);
 	status = EAGAIN;
 	goto out;
     }
@@ -509,7 +512,7 @@ int mddl_stl_deque_insert(mddl_stl_deque_t *const self_p,
   out:
     if (status) {
 	if (NULL != page) {
-	    own_mfree(page);
+	    mddl_free(page);
 	}
     }
     return status;

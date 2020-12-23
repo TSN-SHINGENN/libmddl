@@ -40,18 +40,15 @@ static const int debuglevel = 0;
 
 #define EOL_CRLF "\n\r"
 
-static void *own_malloc(const size_t size);
-static void own_mfree( void *const ptr );
-
-static void *own_malloc(const size_t size)
+/* 弱いアロケータの定義 */
+void __attribute__((weak)) *mddl_malloc(const size_t size)
 {
     return malloc(size);
 }
 
-static void own_mfree( void *const ptr )
+void __attribute__((weak)) mddl_free( void *const ptr )
 {
     free(ptr);
-    return;
 }
 
 
@@ -140,7 +137,7 @@ int mddl_stl_queue_init_ex( mddl_stl_queue_t *const self_p, const size_t sizof_e
 	return EINVAL;
     }
 
-    e = (mddl_stl_queue_ext_t*)own_malloc(sizeof(mddl_stl_queue_ext_t));
+    e = (mddl_stl_queue_ext_t*)mddl_malloc(sizeof(mddl_stl_queue_ext_t));
     if( NULL == e ) {
 	return EAGAIN;
     }
@@ -275,7 +272,7 @@ int mddl_stl_queue_destroy(mddl_stl_queue_t *const self_p)
 
 out:
     if(!status) {
-	own_mfree(e);
+	mddl_free(e);
 	self_p->ext = NULL;
     }
     return status;

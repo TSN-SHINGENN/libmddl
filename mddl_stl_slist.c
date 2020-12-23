@@ -36,18 +36,14 @@ static const int debuglevel = 0;
 #include "dbms.h"
 #define EOL_CRLF "\n\r"
 
-static void *own_malloc(const size_t size);
-static void own_mfree( void *const ptr );
-
-static void *own_malloc(const size_t size)
+void __attribute__((weak)) *mddl_malloc(const size_t size)
 {
     return malloc(size);
 }
 
-static void own_mfree( void *const ptr )
+void __attribute__((weak)) mddl_free( void *const ptr )
 {
     free(ptr);
-    return;
 }
 
 typedef struct _fifoitem {
@@ -110,9 +106,9 @@ int mddl_stl_slist_init(mddl_stl_slist_t *const self_p,
     memset(self_p, 0x0, sizeof(mddl_stl_slist_t));
 
     e = (mddl_stl_slist_ext_t *)
-	own_malloc(sizeof(mddl_stl_slist_ext_t));
+	mddl_malloc(sizeof(mddl_stl_slist_ext_t));
     if (NULL == e) {
-	DBMS1("%s : own_malloc(ext) fail" EOL_CRLF, __func__);
+	DBMS1("%s : mddl_malloc(ext) fail" EOL_CRLF, __func__);
 	return EAGAIN;
     }
     memset(e, 0x0, sizeof(mddl_stl_slist_ext_t));
@@ -146,11 +142,11 @@ int mddl_stl_slist_destroy(mddl_stl_slist_t *const self_p)
 
     /* 最後のエレメントがbaseで無ければ削除 */
     if (e->r_p != &e->base) {
-	own_mfree(e->r_p);
+	mddl_free(e->r_p);
 	e->r_p = NULL;
     }
 
-    own_mfree(self_p->ext);
+    mddl_free(self_p->ext);
     self_p->ext = NULL;
 
     return 0;
@@ -178,10 +174,10 @@ int mddl_stl_slist_push(mddl_stl_slist_t *const self_p, const void *const el_p,
 	return EINVAL;
     }
 
-    f = (fifoitem_t *)own_malloc(sizeof(fifoitem_t) + e->sizof_element);
+    f = (fifoitem_t *)mddl_malloc(sizeof(fifoitem_t) + e->sizof_element);
     if (NULL == f) {
 	DBMS1(
-	      "%s : own_malloc(fifoitem_t) fail" EOL_CRLF, __func__);
+	      "%s : mddl_malloc(fifoitem_t) fail" EOL_CRLF, __func__);
 	status = EAGAIN;
 	goto out;
     }
@@ -200,7 +196,7 @@ int mddl_stl_slist_push(mddl_stl_slist_t *const self_p, const void *const el_p,
   out:
     if (status) {
 	if (NULL != f) {
-	    own_mfree(f);
+	    mddl_free(f);
 	}
     }
     return status;
@@ -233,12 +229,12 @@ int mddl_stl_slist_pop(mddl_stl_slist_t *const self_p)
     --(e->cnt);
 
     if (tmp != &e->base) {
-	own_mfree(tmp);
+	mddl_free(tmp);
     }
 
     if (e->cnt == 0) {
 	if (e->r_p != &e->base) {
-	    own_mfree(e->r_p);
+	    mddl_free(e->r_p);
 	}
 	e->r_p = e->w_p = &e->base;
     }
@@ -458,10 +454,10 @@ int mddl_stl_slist_insert_at( mddl_stl_slist_t *const self_p, const size_t no, v
 	return EFAULT;
     }
 
-    f = (fifoitem_t *) own_malloc(sizeof(fifoitem_t) + e->sizof_element);
+    f = (fifoitem_t *) mddl_malloc(sizeof(fifoitem_t) + e->sizof_element);
     if (NULL == f) {
 	DBMS1(
-	      "%s : own_malloc(fifoitem_t) fail" EOL_CRLF, __func__);
+	      "%s : mddl_malloc(fifoitem_t) fail" EOL_CRLF, __func__);
 	return EAGAIN;
     }
 
@@ -521,12 +517,12 @@ int mddl_stl_slist_erase_at( mddl_stl_slist_t *const self_p, const size_t no)
 
 
     if (tmp != &e->base) {
-	own_mfree(tmp);
+	mddl_free(tmp);
     }
 
     if (e->cnt == 0) {
 	if (e->r_p != &e->base) {
-	    own_mfree(e->r_p);
+	    mddl_free(e->r_p);
 	}
 	e->r_p = e->w_p = &e->base;
     }

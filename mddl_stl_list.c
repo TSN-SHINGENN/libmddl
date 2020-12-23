@@ -37,20 +37,16 @@ static const int debuglevel = 0;
 
 #define EOL_CRLF "\n\r"
 
-static void *own_malloc(const size_t size);
-static void own_mfree( void *const ptr );
-
-static void *own_malloc(const size_t size)
+/* 弱いアロケータの定義 */
+void __attribute__((weak)) *mddl_malloc(const size_t size)
 {
     return malloc(size);
 }
 
-static void own_mfree( void *const ptr )
+void __attribute__((weak)) mddl_free( void *const ptr )
 {
     free(ptr);
-    return;
 }
-
 
 
 typedef struct _queitem {
@@ -87,7 +83,7 @@ int mddl_stl_list_init(mddl_stl_list_t *const self_p,
     memset(self_p, 0x0, sizeof(mddl_stl_list_t));
 
     e = (mddl_stl_list_ext_t *)
-	own_malloc(sizeof(mddl_stl_list_ext_t));
+	mddl_malloc(sizeof(mddl_stl_list_ext_t));
     if (NULL == e) {
 	DBMS1("%s : multios_malloc(ext) fail" EOL_CRLF, __func__);
 	return EAGAIN;
@@ -122,7 +118,7 @@ int mddl_stl_list_destroy(mddl_stl_list_t *const self_p)
 	return EBUSY;
     }
 
-    own_mfree(self_p->ext);
+    mddl_free(self_p->ext);
     self_p->ext = NULL;
 
     return 0;
@@ -157,9 +153,9 @@ int mddl_stl_list_push_back(mddl_stl_list_t *const self_p,
 	return EINVAL;
     }
 
-    f = (queitem_t *)own_malloc(sizeof(queitem_t) + e->sizof_element);
+    f = (queitem_t *)mddl_malloc(sizeof(queitem_t) + e->sizof_element);
     if (NULL == f) {
-	DBMS1("%s : own_malloc(queitem_t) fail" EOL_CRLF, __func__);
+	DBMS1("%s : mddl_malloc(queitem_t) fail" EOL_CRLF, __func__);
 	status = EAGAIN;
 	goto out;
     }
@@ -180,7 +176,7 @@ int mddl_stl_list_push_back(mddl_stl_list_t *const self_p,
   out:
     if (status) {
 	if (NULL != f) {
-	    own_mfree(f);
+	    mddl_free(f);
 	}
     }
     return status;
@@ -235,7 +231,7 @@ int mddl_stl_list_pop_front(mddl_stl_list_t *const self_p)
     ++e->start_id;
 
     if (tmp != &e->base) {
-	own_mfree(tmp);
+	mddl_free(tmp);
     }
 
     if (e->cnt == 0) {
@@ -276,7 +272,7 @@ int mddl_stl_list_pop_back(mddl_stl_list_t *const self_p)
     e->cnt--;
 
     if (tmp != &e->base) {
-	own_mfree(tmp);
+	mddl_free(tmp);
     }
 
     if (e->cnt == 0) {
@@ -480,7 +476,7 @@ int mddl_stl_list_remove_at(mddl_stl_list_t *const self_p,
     };
 
     /* itemのエレメントを削除 */
-    own_mfree(item_p);
+    mddl_free(item_p);
 
     return 0;
 }
@@ -578,9 +574,9 @@ int mddl_stl_list_insert(mddl_stl_list_t *const self_p,
     DBMS3("%s : front=0x%p e->base=0x%p" EOL_CRLF,
 	  __func__, front, &e->base);
 
-    f = (queitem_t *) own_malloc(sizeof(queitem_t) + e->sizof_element);
+    f = (queitem_t *) mddl_malloc(sizeof(queitem_t) + e->sizof_element);
     if (NULL == f) {
-	DBMS1("%s : own_malloc(queitem_t) fail" EOL_CRLF, __func__);
+	DBMS1("%s : mddl_malloc(queitem_t) fail" EOL_CRLF, __func__);
 	status = EAGAIN;
 	goto out;
     }
@@ -614,7 +610,7 @@ int mddl_stl_list_insert(mddl_stl_list_t *const self_p,
   out:
     if (status) {
 	if (NULL != f) {
-	    own_mfree(f);
+	    mddl_free(f);
 	}
     }
     return status;

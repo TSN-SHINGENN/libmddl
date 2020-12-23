@@ -42,24 +42,20 @@ static const int debuglevel = 0;
 #define EOL_CRLF "\n"
 #endif
 
-static void *own_malloc(const size_t size);
-static void *own_mrealloc( void *const ptr, const size_t size);
-static void own_mfree( void *const ptr );
-
-static void *own_malloc(const size_t size)
+/* 弱いアロケータの定義 */
+void __attribute__((weak)) *mddl_malloc(const size_t size)
 {
     return malloc(size);
 }
 
-static void *own_mrealloc( void *const ptr, const size_t size)
+void __attribute__((weak)) *mddl_realloc( void *const ptr, const size_t size)
 {
     return realloc( ptr, size);
 }
 
-static void own_mfree( void *const ptr )
+void __attribute__((weak)) mddl_free( void *const ptr )
 {
     free(ptr);
-    return;
 }
 
 typedef union _mddl_stl_vector_stat {
@@ -98,7 +94,7 @@ int mddl_stl_vector_init( mddl_stl_vector_t *const self_p, const size_t sizof_el
     memset(self_p, 0x0, sizeof(mddl_stl_vector_t));
 
     e = (mddl_stl_vector_ext_t *)
-	own_malloc(sizeof(mddl_stl_vector_ext_t));
+	mddl_malloc(sizeof(mddl_stl_vector_ext_t));
     if (NULL == e) {
 	DBMS1("%s : mddl_malloc(ext) fail" EOL_CRLF, __func__);
 	return EAGAIN;
@@ -131,11 +127,11 @@ int mddl_stl_vector_destroy(mddl_stl_vector_t *const self_p)
     }
 
     if (NULL != e->buf) {
-	own_mfree(e->buf);
+	mddl_free(e->buf);
 	e->buf = NULL;
     }
 
-    own_mfree(self_p->ext);
+    mddl_free(self_p->ext);
     self_p->ext = NULL;
 
     return 0;
@@ -157,7 +153,7 @@ static int resize_buffer(mddl_stl_vector_ext_t *const e,
     void *new_buf = NULL;
 
     if (e->reserved_bytes < new_reserve) {
-	new_buf = own_mrealloc(e->buf, new_reserve);
+	new_buf = mddl_realloc(e->buf, new_reserve);
 	if (NULL == new_buf) {
 	    return EAGAIN;
 	}
@@ -405,7 +401,7 @@ int mddl_stl_vector_clear(mddl_stl_vector_t *const self_p)
     }
 
     if (NULL != e->buf) {
-	own_mfree(e->buf);
+	mddl_free(e->buf);
 	e->buf = NULL;
     }
     e->num_elements = 0;
@@ -653,7 +649,7 @@ int mddl_stl_vector_element_swap_at( mddl_stl_vector_t *const self_p, const size
 	return EINVAL;
     }
 
-    buf = own_malloc( e->sizof_element );
+    buf = mddl_malloc( e->sizof_element );
     if( NULL == buf ) {
 	return EAGAIN;
     }
@@ -662,7 +658,7 @@ int mddl_stl_vector_element_swap_at( mddl_stl_vector_t *const self_p, const size
     memcpy( ptr2, buf, e->sizof_element);
 
     if( NULL != buf ) {
-	own_mfree(buf);
+	mddl_free(buf);
     }
 
     return 0;
@@ -695,12 +691,12 @@ int mddl_stl_vector_shrink( mddl_stl_vector_t *const self_p, const size_t num_el
 
     if( num_elements == 0 ) {
 	if( NULL != e->buf ) {
-	    own_mfree(e->buf);
+	    mddl_free(e->buf);
 	    e->buf = NULL;
 	}
 	e->reserved_bytes = 0;
     } else {
-	void *new_buf = own_mrealloc(e->buf, new_reserve);
+	void *new_buf = mddl_realloc(e->buf, new_reserve);
 	if (NULL == new_buf) {
 	    return EAGAIN;
 	}
