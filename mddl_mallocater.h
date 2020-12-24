@@ -41,7 +41,8 @@ void *mddl_mallocater_alloc_with_obj(mddl_mallocater_t *const self_p,const size_
 void mddl_mallocater_free_with_obj(mddl_mallocater_t *const self_p, void * const ptr); 
 void *mddl_mallocater_realloc_with_obj(mddl_mallocater_t *const self_p, void *const ptr, const size_t size);
 
-int64_t mddl_mallocater_avphys_with_obj(mddl_mallocater_t *const self_p);
+size_t mddl_mallocater_phys_with_obj( mddl_mallocater_t *const self_p);
+size_t mddl_mallocater_avphys_with_obj(mddl_mallocater_t *const self_p);
 
 void _mddl_mallocater_dump_region_list(mddl_mallocater_t const *const self_p);
 

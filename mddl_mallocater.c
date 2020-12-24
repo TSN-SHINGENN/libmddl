@@ -717,15 +717,15 @@ void *mddl_mallocater_realloc(void *const ptr, const size_t size)
 }
 
 /**
- * @fn int64_t mddl_mallocater_avphys_with_obj(void *const ptr)
- * @breif late_mallocaterが管理しているメモリ領域のFREE領域を戻します。
+ * @fn size_t mddl_mallocater_avphys_with_obj(void *const ptr)
+ * @breif 管理しているメモリ領域のFREE領域を戻します。
  * @retval 0以上 FREE領域のトータルサイズ
  **/
-int64_t mddl_mallocater_avphys_with_obj(mddl_mallocater_t *const self_p)
+size_t mddl_mallocater_avphys_with_obj(mddl_mallocater_t *const self_p)
 {
     mddl_mallocater_t * const o = self_p;
     mddl_malllocate_header_t const *p; 
-    int64_t freearea_sz = 0;
+    size_t freearea_sz = 0;
 
     /* 後方確認 */
     for( p=o->base.next_p; p != &o->base; p=p->next_p ) {
@@ -737,3 +737,11 @@ int64_t mddl_mallocater_avphys_with_obj(mddl_mallocater_t *const self_p)
     return freearea_sz;
 }
 
+/**
+ * @fn size_t mddl_mallocater_phys_with_obj( mddl_mallocater_t *const self_p)
+ * @brief 管理しているメモリ領域の全領域を戻します。
+ */
+size_t mddl_mallocater_phys_with_obj( mddl_mallocater_t *const self_p)
+{
+    return self_p->bufsiz;
+}
