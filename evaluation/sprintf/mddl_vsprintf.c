@@ -20,6 +20,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
+#include <math.h>
 
 #ifdef __GNUC__
 __attribute__ ((unused))
@@ -33,6 +34,8 @@ static const int debuglevel = 0;
 
 /* this */
 #include "mddl_vsprintf.h"
+
+#define USE_FLOAT_FORMAT
 
 #define EOL_CRLF "\n\r"
 
@@ -154,9 +157,9 @@ static double PRECISION = 0.00001;
  */
 static size_t ftoa(char *const buf, const size_t bufsz, const float f)
 {
-    static char *c;
-    static double n;
-    static size_t l;
+    char *c;
+    double n;
+    size_t l;
 
     c = buf;
     n = f;
@@ -173,9 +176,9 @@ static size_t ftoa(char *const buf, const size_t bufsz, const float f)
         strcpy(c, "0");
 	return 1;
     } else {
-        static int digit, m, m1;
-        static int useExp;
-        static uint8_t neg;
+        int digit, m, m1;
+        int useExp;
+        uint8_t neg;
         neg = (n < 0);
         if (neg) {
             n = -n;
@@ -193,8 +196,7 @@ static size_t ftoa(char *const buf, const size_t bufsz, const float f)
             if (m < 0) {
                m -= 1.0;
 	    }
-            // n = n / pow(10.0, m);
-            n = n / smal_ipow10(m);
+            n = n / pow(10.0, m);
             m1 = m;
             m = 0;
         }
@@ -203,9 +205,7 @@ static size_t ftoa(char *const buf, const size_t bufsz, const float f)
         }
         // convert the number
         while (n > PRECISION || m >= 0) {
-            // double weight = pow(10.0, m);
-            static double weight;
-            weight = smal_ipow10(m);
+            double weight = pow(10.0, m);
             if (weight > 0 && !isinf(weight)) {
                 digit = floor(n / weight);
                 n -= (digit * weight);
@@ -220,7 +220,7 @@ static size_t ftoa(char *const buf, const size_t bufsz, const float f)
         }
         if (useExp) {
             // convert the exponent
-            static int i, j;
+            int i, j;
             *(c++) = 'e';
             if (m1 > 0) {
                 *(c++) = '+';
@@ -253,25 +253,36 @@ static size_t ftoa(char *const buf, const size_t bufsz, const float f)
     return l;
 }
 
-static void put_float(void (*__putc)(char), const float f, const SMAL_INT_T put_len, const SMAL_CHAR_T sign, const uint8_t flags)
+static int put_float(const xtoa_output_method_t *const method_p, const float f, const int put_len, const char sign, const union_xtoa_attr_t *const attr_p)
 {
-    static char fstr[80];
-    static size_t i, n;
+    char fstr[80];
+    size_t i, n;
+    const putchar_callback_ptr_t _putchar_cb =  method_p->_putchar_cb;
+    char *bufp = method_p->buf;
 
     i = ftoa(fstr, 80, f);
-    for(n=0; ( i > 0 );) {
+    for(n=0; ( i > 0 ); ++n) {
 	i--;
-	__putc(fstr[n]);
-	++n;
+	if( NULL != _putchar_cb ) {
+	    int result;
+	    result = _putchar_cb(fstr[n]);
+	    if(result<0) {
+		return result;
+	    }
+	}
+	if( NULL !=  bufp ) {
+	    *bufp = fstr[n];
+	    ++bufp;
+	}
     }
 
-    return;
+    return n;
 }
 #endif /* end of USE_FLOAT_FORMAT */
 
 
 /**
- * @fn int static integer_to_string_with_format(const xtoa_output_method_t *const method_p, char sign, unsigned long long value, const int radix, int field_length, const union_xtoa_attr_t *const attr_p, int *const retlen_p)
+ * @fn int static integer_to_string_with_format(const xtoa_output_method_t *const method_p, char sign, unsigned long long value, const int radix, long long int field_length, const union_xtoa_attr_t *const attr_p, int *const retlen_p)
  * @brief 引数の情報から整数値を変換してコールバックにASCIIコードで送ります。
  * @param method_p 文字出力（出力先コールバック・バッファ・最大文字長)
  * @param sign 符号(ASCIIコードで、0は符号なし）
@@ -283,7 +294,7 @@ static void put_float(void (*__putc)(char), const float f, const SMAL_INT_T put_
  * @retval 0 成功
  * @retval 0以外　エラー番号
  */
-static int integer_to_string_with_format(const xtoa_output_method_t *const method_p, char sign, unsigned long long value, const int radix, int field_length, const union_xtoa_attr_t *const attr_p, int *const retlen_p)
+static int integer_to_string_with_format(const xtoa_output_method_t *const method_p, char sign, unsigned long long value, const int radix, long long int field_length, const union_xtoa_attr_t *const attr_p, int *const retlen_p)
 {
     const char *const symbols = (attr_p->f.str_is_lower) ? own_x2a_lower_str : own_x2a_upper_str;
     const size_t szoflimit = method_p->maxlenofstring;
@@ -306,16 +317,8 @@ static int integer_to_string_with_format(const xtoa_output_method_t *const metho
     /* value値の文字列変換および,のスタック追加 */
     do {
 	const uint8_t digi = (uint8_t)(value % radix);
-#if 1
 	stack_buf[strpoint] = symbols[digi];
 	++strpoint;
-#else
-	if( NULL == own_utoa( digi, &stack_buf[strpoint], 1, radix, attr_p)) {
-	    DBMS1("%s : own_utoa fail" EOL_CRLF, __func__);
-	    return EOVERFLOW;
-	}
-	++strpoint;
-#endif
 	if( (attr_p->f.thousand_group) && ((strpoint & 0x3) == 0x3)) {
 	    stack_buf[strpoint] = ',';
 	    ++strpoint;
@@ -357,7 +360,7 @@ static int integer_to_string_with_format(const xtoa_output_method_t *const metho
     }
 
     if(1) {
-  	const unsigned int total_length = (field_length > 0 ) ? (strpoint + field_length) : strpoint;
+  	const int total_length = (field_length > 0 ) ? (strpoint + (int)field_length) : strpoint;
 	if( retlen_p != NULL ) {
 	    *retlen_p = total_length;
 	}
@@ -423,9 +426,8 @@ static int _own_vsnprintf(const xtoa_output_method_t *const method_p, const char
     int lenofneeders = 0;
     const char *fptr;
     int sign;
-
-    int precision;
     int tmp;
+    long long int precision;
     long long int length;
     const putchar_callback_ptr_t _putchar_cb = method_p->_putchar_cb;
     const size_t max_len = method_p->maxlenofstring;
@@ -677,6 +679,16 @@ static int _own_vsnprintf(const xtoa_output_method_t *const method_p, const char
 		    *bufp = asc;
 		    ++bufp;
 		}
+	    } break;
+	    case 'f': {
+		float f;
+		int retlen;
+                f = (float)va_arg(ap, double);
+		retlen = put_float(&m, f, length, sign, &specs);
+		if(retlen<0) {
+		    return retlen;
+		}
+		lenofneeders += retlen;
 	    } break;
 	    case 's': {
 		const char *s = (char*)get_va_pointer(&ap);
