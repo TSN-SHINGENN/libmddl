@@ -147,11 +147,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="main.c" />
     <ClCompile Include="mddl_mallocater.c" />
     <ClCompile Include="mddl_printf.c" />
     <ClCompile Include="mddl_sprintf.c" />
     <ClCompile Include="mddl_vsprintf.c" />
-    <ClCompile Include="sprintf.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dbms.h" />
