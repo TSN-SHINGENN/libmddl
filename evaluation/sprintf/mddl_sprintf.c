@@ -7,8 +7,17 @@
 
 /**
  * @file mddl_sprintf.c
- * @brief オリジナル実装の軽い文字列処理ライブラリ。
+ * @brief mddl_vsprintfを使用した文字列処理ライブラリ。
  */
+
+#ifdef WIN32
+/* Microsoft Windows Series */
+#define _CRT_SECURE_NO_WARNINGS
+#if _MSC_VER >= 1400            /* VC++2005 */
+#pragma warning ( disable:4996 )
+#pragma warning ( disable:4819 )
+#endif
+#endif
 
 #include <stddef.h>
 #include <stdarg.h>

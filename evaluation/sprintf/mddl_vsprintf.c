@@ -13,6 +13,15 @@
  * @brief オリジナル実装の軽い文字列処理ライブラリ。
  */
 
+#if defined(WIN32) || 1
+/* Microsoft Windows Series */
+#define _CRT_SECURE_NO_WARNINGS
+#if _MSC_VER >= 1400            /* VC++2005 */
+#pragma warning ( disable:4996 )
+#pragma warning ( disable:4819 )
+#endif
+#endif
+
 /* CRL */
 #include <stddef.h>
 #include <stdint.h>
