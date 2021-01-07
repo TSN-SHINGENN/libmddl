@@ -112,8 +112,8 @@ static unsigned long long get_unsigned(va_list *const ap_p, const enum_mddl_stda
 {
     enum_mddl_stdarg_integer_type_t t = type;
 
-    if(t >=  _IS_LL) {
-	t = _IS_LL;
+    if(t >=  _IS_Ptr) {
+	t = _IS_Ptr;
     } else if(t <= _IS_Char) {
 	t = _IS_Char;
     }
@@ -135,8 +135,8 @@ static long long int get_signed(va_list *const ap_p, const enum_mddl_stdarg_inte
 {
     enum_mddl_stdarg_integer_type_t t = type;
 
-    if(t >=  _IS_LL) {
-	t = _IS_LL;
+    if(t >=  _IS_Ptr) {
+	t = _IS_Ptr;
     } else if(t <= _IS_Char) {
 	t = _IS_Char;
     }
@@ -373,7 +373,7 @@ static int integer_to_string_with_format(const xtoa_output_method_t *const metho
     }
 
     if(1) {
-  	const int total_length = (field_length > 0 ) ? (strpoint + (int)field_length) : strpoint;
+  	const size_t total_length = (field_length > 0 ) ? (strpoint + (int)field_length) : (size_t)strpoint;
 	if( retlen_p != NULL ) {
 	    *retlen_p = total_length;
 	}
@@ -647,7 +647,7 @@ static int _own_vsnprintf(const xtoa_output_method_t *const method_p, const char
 	    } break;
 
 	    case 'p':
-		length = sizeof(uintptr_t);
+		length = sizeof(uintptr_t) * 2;
 		int_type = _IS_Ptr;
 		specs.f.zero_padding = 1;
 		specs.f.alternative = 1;
