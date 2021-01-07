@@ -40,11 +40,11 @@ main(int ac, char **av)
     mddl_printf_init(putch);
 
     for(n=0;n<100;n++) {
-        len = sprintf(buf, "%d %c %d %s %d buf=%p\n", a, (int)n, b, txt, a, buf);
+        len = sprintf(buf, "%% %d %c %d %s %d buf=%p\n", a, (int)n, b, txt, a, buf);
 	printf("sprintf=%s",buf);
 	printf("len=%llu\n", (unsigned long long)len);
 
-        len = mddl_printf("%d %c %d %s %d buf=%p\n", a, (int)n, b, txt, a, buf);
+        len = mddl_printf("%% %d %c %d %s %d buf=%p\n", a, (int)n, b, txt, a, buf);
 	printf("len=%llu\n", (unsigned long long)len);
 
 //        mddl_printf("%f %f %f\n", d[0], d[1], d[2]);
