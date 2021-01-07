@@ -49,7 +49,7 @@ static const int debuglevel = 0;
 #define EOL_CRLF "\n\r"
 
 #define _isnumc(x) ( (x) >= '0' && (x) <= '9' )
-#define _ctoi(x)   ( (x) -  '0' )
+#define _ctoi(x)   ( (char)((int64_t)(x) - '0') )
 
 
 typedef enum _enum_mddl_stdarg_integer_type {
@@ -186,14 +186,14 @@ static size_t ftoa(char *const buf, const size_t bufsz, const float f)
 	return 1;
     } else {
         int digit, m, m1;
-        int useExp;
+        int8_t useExp;
         uint8_t neg;
         neg = (n < 0);
         if (neg) {
             n = -n;
 	}
         // calculate magnitude
-        m = log10(n);
+        m = (int)log10(n);
         useExp = (m >= 14 || (neg && m >= 9) || m <= -9);
 
 	if (neg) {
@@ -203,20 +203,20 @@ static size_t ftoa(char *const buf, const size_t bufsz, const float f)
         // set up for scientific notation
         if (useExp) {
             if (m < 0) {
-               m -= 1.0;
+               m -= 1;
 	    }
-            n = n / pow(10.0, m);
+            n = n / pow(10.0, (double)m);
             m1 = m;
             m = 0;
         }
-        if (m < 1.0) {
+        if (m < 1) {
             m = 0;
         }
         // convert the number
         while (n > PRECISION || m >= 0) {
             double weight = pow(10.0, m);
             if (weight > 0 && !isinf(weight)) {
-                digit = floor(n / weight);
+                digit = (int)floor(n / weight);
                 n -= (digit * weight);
                 *(c++) = '0' + digit;
 		l++;
@@ -262,12 +262,16 @@ static size_t ftoa(char *const buf, const size_t bufsz, const float f)
     return l;
 }
 
-static int put_float(const xtoa_output_method_t *const method_p, const float f, const int put_len, const char sign, const union_xtoa_attr_t *const attr_p)
+static int put_float(const xtoa_output_method_t *const method_p, const float f, long long int field_length, const char sign, const union_xtoa_attr_t *const attr_p)
 {
     char fstr[80];
     size_t i, n;
     const putchar_callback_ptr_t _putchar_cb =  method_p->_putchar_cb;
     char *bufp = method_p->buf;
+
+    if( field_length < 80 ) {
+	return -1;
+    }
 
     i = ftoa(fstr, 80, f);
     for(n=0; ( i > 0 ); ++n) {
@@ -285,7 +289,7 @@ static int put_float(const xtoa_output_method_t *const method_p, const float f, 
 	}
     }
 
-    return n;
+    return (int)n;
 }
 #endif /* end of USE_FLOAT_FORMAT */
 
@@ -435,9 +439,8 @@ static int _own_vsnprintf(const xtoa_output_method_t *const method_p, const char
     int lenofneeders = 0;
     const char *fptr;
     int sign;
-    int tmp;
-    long long int precision;
-    long long int length;
+    long long int precision;	/* 整数精度 */
+    long long int length;	/* フィールド幅 */
     const putchar_callback_ptr_t _putchar_cb = method_p->_putchar_cb;
     const size_t max_len = method_p->maxlenofstring;
     char *bufp = method_p->buf;
@@ -461,7 +464,6 @@ static int _own_vsnprintf(const xtoa_output_method_t *const method_p, const char
 	sign = 0;
 	length = 0;
 	precision = 0;
-	tmp = 0;
 	specs.flags = 0;
 	int_type = _IS_Normal;
 
@@ -545,7 +547,7 @@ static int _own_vsnprintf(const xtoa_output_method_t *const method_p, const char
 	} else {
 	    for(;isdigit(*fptr); ++fptr) {
 		length *= 10;
-		length += _ctoi(*fptr);
+		length += (long long int)_ctoi(*fptr);
 	    }
 	}
 
@@ -674,7 +676,7 @@ static int _own_vsnprintf(const xtoa_output_method_t *const method_p, const char
 		const char asc = (char)(0xff & ulli);
 //		multios_xtoa_output_method_t m = set_area_method( *method_p, bufp, remain);
 
-		if((max_len != 0 ) && _prelength_is_over(max_len, (size_t)(lenofneeders+1)) ) {
+		if((max_len != 0 ) && _prelength_is_over(max_len, ((size_t)lenofneeders+1)) ) {
 		    errno = ENOSPC;
 		    return -1;
 		}
@@ -701,14 +703,15 @@ static int _own_vsnprintf(const xtoa_output_method_t *const method_p, const char
 	    } break;
 	    case 's': {
 		const char *s = (char*)get_va_pointer(&ap);
+		size_t tmp;
 
 		if (NULL == s) {
 		    s = "(null)";
 		}
-		tmp = (int)strlen(s);
+		tmp = strlen(s);
 
-		if ( precision && (precision < tmp) ) {
-		    tmp = precision;
+		if ( precision && ((size_t)precision < tmp) ) {
+		    tmp = (size_t)precision;
 		}
 		length -= tmp;
 		if (specs.f.left_justified /* !(flags & LEFT_JUSTIFIED) */) {
@@ -731,7 +734,7 @@ static int _own_vsnprintf(const xtoa_output_method_t *const method_p, const char
 			}
 		    }
 		}
-		if( (max_len != 0) && ( tmp != 0) && _prelength_is_over(max_len, (size_t)(lenofneeders+tmp)) ) {
+		if( (max_len != 0) && ( tmp != 0) && _prelength_is_over(max_len, ((size_t)lenofneeders+tmp)) ) {
 		    errno = ENOSPC;
 		    return -1;
 		} else {
@@ -770,7 +773,7 @@ static int _own_vsnprintf(const xtoa_output_method_t *const method_p, const char
 	    } break;
 	    case '%': {
 		const char strper = '%';
-		if( (max_len != 0) && (length != 0) && _prelength_is_over(max_len, (size_t)(lenofneeders+1)) ) {
+		if( (max_len != 0) && (length != 0) && _prelength_is_over(max_len, ((size_t)lenofneeders+1)) ) {
 		    errno = ENOSPC;
 		} else {
 		    if( NULL != _putchar_cb ) {

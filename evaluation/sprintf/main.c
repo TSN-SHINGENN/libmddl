@@ -4,7 +4,7 @@
 
 static int putch(int code)
 {
-    fputc(code, stdout);
+    return fputc(code, stdout);
 }
 
 
@@ -29,8 +29,8 @@ main(int ac, char **av)
     mddl_printf_init(putch);
 
     for(n=0;n<100;n++) {
-        smal_printf("%d %c %d %s %d\n", a, n, b, txt, a);
-        smal_printf("%f %f %f\n", d[0], d[1], d[2]);
+        mddl_printf("%d %c %d %s %d\n", a, n, b, txt, a);
+        mddl_printf("%f %f %f\n", d[0], d[1], d[2]);
     }
 
     return 0;

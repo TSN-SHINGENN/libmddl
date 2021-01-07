@@ -12,9 +12,6 @@ extern "C" {
 int mddl_sprintf(char *const buf, const char *const fmt, ...);
 int mddl_snprintf(char *const buf, const size_t max_length, const char *const format, ...);
 
-int mddl_sprintf_putchar(int (*putchar_cbfunc)(int), const char *const fmt, ...);
-int mddl_snprintf_putchar(int (*putchar_cbfunc)(int), const size_t max_length, const char *const fmt, ...);
-
 #if defined(__cplusplus)
 }
 #endif

@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-int mddl_printf_init( int (*putchar_cb)(int));
+void mddl_printf_init( int (*putchar_cb)(int));
 int mddl_printf(const char *const fmt, ...);
 
 #if defined (__cplusplus )

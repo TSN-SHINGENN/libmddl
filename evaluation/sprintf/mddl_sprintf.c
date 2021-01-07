@@ -66,32 +66,3 @@ int mddl_snprintf(char *const buf, const size_t max_length, const char *const fm
     return retval;
 }
 
-int mddl_sprintf_putchar(int (*putchar_cbfunc)(int), const char *const fmt, ...)
-{
-    int retval;
-    va_list ap;
-
-    DBMS5( "%s : fmt=%s" EOL_CRLF,__func__, fmt);
-
-    va_start(ap, fmt);
-    retval = mddl_vsprintf_putchar( putchar_cbfunc, fmt, ap);
-    va_end(ap);
-
-    return retval;
-}
-
-int mddl_snprintf_putchar(int (*putchar_cbfunc)(int), const size_t max_length, const char *const fmt, ...)
-{
-    int retval;
-    va_list ap;
-
-    DBMS5( "%s : fmt=%s" EOL_CRLF,__func__, fmt);
-
-    va_start(ap, fmt);
-    retval = mddl_vsnprintf_putchar( putchar_cbfunc, max_length, fmt, ap);
-    va_end(ap);
-
-    return retval;
-}
-
-
