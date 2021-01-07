@@ -159,7 +159,7 @@ static const char * const own_x2a_lower_str = "0123456789abcdefghijklmnopqrstuvw
 static const char * const own_x2a_upper_str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 
-#ifdef USE_FLOAT_FORMAT
+#if defined(USE_FLOAT_FORMAT)
 static double PRECISION = 0.000001;
 /**
  * Double to ASCII
@@ -693,6 +693,7 @@ static int _own_vsnprintf(const xtoa_output_method_t *const method_p, const char
 		    ++bufp;
 		}
 	    } break;
+#if defined(USE_FLOAT_FORMAT)
 	    case 'f': {
 		float f;
 		int retlen;
@@ -703,6 +704,7 @@ static int _own_vsnprintf(const xtoa_output_method_t *const method_p, const char
 		}
 		lenofneeders += retlen;
 	    } break;
+#endif /* end of USE_FLOAT_FORMAT */
 	    case 's': {
 		const char *s = (char*)get_va_pointer(&ap);
 		size_t tmp;
