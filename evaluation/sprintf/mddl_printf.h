@@ -8,6 +8,10 @@ extern "C" {
 #endif
 
 void mddl_printf_init( int (*putchar_cb)(int));
+
+#if defined(__GNUC__)
+__attribute__((format(printf, 1, 2)))
+#endif
 int mddl_printf(const char *const fmt, ...);
 
 #if defined (__cplusplus )
