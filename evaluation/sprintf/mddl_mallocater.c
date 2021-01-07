@@ -15,6 +15,15 @@
  *	指定されたメモリ領域内での、動的な割り当てと開放を行います。
  */
 
+#ifdef WIN32
+/* Microsoft Windows Series */
+#define _CRT_SECURE_NO_WARNINGS
+#if _MSC_VER >= 1400            /* VC++2005 */
+#pragma warning ( disable:4996 )
+#pragma warning ( disable:4819 )
+#endif
+#endif
+
 #include <sys/types.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -209,7 +218,7 @@ int mddl_mallocater_init_obj(mddl_mallocater_t *const self_p, void * const buf, 
     *(uintptr_t*)GET_FOOTER_PTR(h) = (uintptr_t)h;
 
     IFDBG5THEN {
-	    DMSG( "self_p=%p : buf=%p bufsiz=%llu, &self_p->base=%p" EOL_CRLF,
+	    DMSG( "%s : self_p=%p buf=%p bufsiz=%llu, &self_p->base=%p" EOL_CRLF,
 		__func__, self_p, buf, bufsiz, &(self_p->base));
     }
 
@@ -272,8 +281,8 @@ void *mddl_mallocater_alloc_with_obj(mddl_mallocater_t *const self_p, const size
     }
 
     IFDBG3THEN {
-	DBMS3( "%s : header size = %s : malloc size = %s, totalsize = %s" EOL_CRLF,
-	    __func__, SIZEOF_ALLOCATEHEADER, sz, totalsz);
+	DBMS3( "%s : header size = %llu : malloc size = %llu, totalsize = %llu" EOL_CRLF,
+	    __func__, (unsigned long long)SIZEOF_ALLOCATEHEADER, (unsigned long long)sz, (unsigned long long)totalsz);
     }
 
     /* 指定サイズと同等があるか探す */
@@ -483,7 +492,7 @@ void _mddl_mallocater_dump_region_list(mddl_mallocater_t const *const self_p)
     DBMS5(  "%s : execute" EOL_CRLF, __func__);
 
     DMSG(  "mallocater_dump_region" EOL_CRLF);
-    DMSG(  "self_p=0x%p &self_p->base=0x%p" EOL_CRLF, self_p, self_p->base);
+    DMSG(  "self_p=0x%p &self_p->base=0x%p" EOL_CRLF, self_p, &(self_p->base));
 
 
     /* 後方確認 */
