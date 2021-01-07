@@ -15,7 +15,7 @@
  *	指定されたメモリ領域内での、動的な割り当てと開放を行います。
  */
 
-#ifdef WIN32
+#if defined(WIN32)
 /* Microsoft Windows Series */
 #define _CRT_SECURE_NO_WARNINGS
 #if _MSC_VER >= 1400            /* VC++2005 */

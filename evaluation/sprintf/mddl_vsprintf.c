@@ -13,7 +13,7 @@
  * @brief オリジナル実装の軽い文字列処理ライブラリ。
  */
 
-#if defined(WIN32) || 1
+#if defined(WIN32)
 /* Microsoft Windows Series */
 #define _CRT_SECURE_NO_WARNINGS
 #if _MSC_VER >= 1400            /* VC++2005 */
@@ -44,7 +44,7 @@ static const int debuglevel = 0;
 /* this */
 #include "mddl_vsprintf.h"
 
-#define USE_FLOAT_FORMAT
+// #define USE_FLOAT_FORMAT
 
 #define EOL_CRLF "\n\r"
 

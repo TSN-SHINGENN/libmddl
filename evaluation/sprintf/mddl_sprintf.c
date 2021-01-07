@@ -10,7 +10,7 @@
  * @brief mddl_vsprintfを使用した文字列処理ライブラリ。
  */
 
-#ifdef WIN32
+#if defined(WIN32)
 /* Microsoft Windows Series */
 #define _CRT_SECURE_NO_WARNINGS
 #if _MSC_VER >= 1400            /* VC++2005 */
