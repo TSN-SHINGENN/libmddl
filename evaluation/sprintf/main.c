@@ -22,9 +22,10 @@ int
 main(int ac, char **av)
 {
     int a = 12345, b = 987654;
+    int len;
     char C = 'C';
     const char *txt="chat put acbde";
-    size_t n, len;
+    size_t n;
     char buf[128];
 
     double d[] = {
@@ -45,14 +46,14 @@ main(int ac, char **av)
 	printf("len=%llu\n", (unsigned long long)len);
 
         len = mddl_printf("%% %d %c %d %s %d buf=%p\n", a, (int)n, b, txt, a, buf);
-	printf("len=%llu\n", (unsigned long long)len);
+	mddl_printf("len=%llu\n", (unsigned long long)len);
 
 	len = sprintf(buf, "%f %f %f\n", d[0], d[1], d[2]);
 	printf("float sprintf=%s",buf);
-	printf("len=%llu\n", (unsigned long long)len);
+	printf("len=%d\n", len);
 
         len = mddl_printf("%f %f %f\n", d[0], d[1], d[2]);
-	printf("len=%llu\n", (unsigned long long)len);
+	printf("len=%d\n", len);
     }
 
     return 0;
