@@ -649,8 +649,9 @@ static int _own_vsnprintf(const xtoa_output_method_t *const method_p, const char
 	    case 'p':
 		length = sizeof(uintptr_t) * 2;
 		int_type = _IS_Ptr;
+		specs.f.left_justified = 1;
 		specs.f.zero_padding = 1;
-		specs.f.alternative = 1;
+//		specs.f.alternative = 1;
 		specs.f.str_is_lower = 1;
 	    case 'x': 
 		specs.f.str_is_lower = 1;
