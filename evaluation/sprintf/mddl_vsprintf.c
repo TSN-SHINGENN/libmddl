@@ -686,6 +686,7 @@ static int _own_vsnprintf(const xtoa_output_method_t *const method_p, const char
 			return result;
 		    }
 		}
+		++lenofneeders;
 		if( NULL != method_p->buf) {
 		    *bufp = asc;
 		    ++bufp;

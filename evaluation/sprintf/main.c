@@ -1,4 +1,14 @@
+#if defined(WIN32) || 1
+/* Microsoft Windows Series */
+#define _CRT_SECURE_NO_WARNINGS
+#if _MSC_VER >= 1400            /* VC++2005 */
+#pragma warning ( disable:4996 )
+#pragma warning ( disable:4819 )
+#endif
+#endif
+
 #include <stdio.h>
+#include <string.h>
 
 #include "mddl_printf.h"
 
@@ -14,7 +24,8 @@ main(int ac, char **av)
     int a = 12345, b = 987654;
     char C = 'C';
     const char *txt="chat put acbde";
-    size_t n;
+    size_t n, len;
+    char buf[128];
 
     double d[] = {
         0.0,
@@ -29,8 +40,14 @@ main(int ac, char **av)
     mddl_printf_init(putch);
 
     for(n=0;n<100;n++) {
-        mddl_printf("%d %c %d %s %d\n", a, n, b, txt, a);
-        mddl_printf("%f %f %f\n", d[0], d[1], d[2]);
+        len = sprintf(buf, "%d %c %d %s %d buf=%p\n", a, (int)n, b, txt, a, buf);
+	printf("sprintf=%s",buf);
+	printf("len=%llu\n", (unsigned long long)len);
+
+        len = mddl_printf("%d %c %d %s %d buf=%p\n", a, (int)n, b, txt, a, buf);
+	printf("len=%llu\n", (unsigned long long)len);
+
+//        mddl_printf("%f %f %f\n", d[0], d[1], d[2]);
     }
 
     return 0;

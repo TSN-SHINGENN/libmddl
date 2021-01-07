@@ -184,7 +184,8 @@ int mddl_mallocater_init_obj(mddl_mallocater_t *const self_p, void * const buf, 
     mddl_malllocate_header_t *h;
     const uint8_t align = (uintptr_t)buf & (ALLOCATER_ALIGN -1);
 
-    DBMS5( "%s : execute buf=0x%p siz=%llu" EOL_CRLF, __func__, buf, bufsiz);
+    DBMS5( "%s : execute buf=0x%p siz=%llu" EOL_CRLF, __func__,
+	    buf, (unsigned long long)bufsiz);
 
     if( bufsiz < (TOTALAREASIZE(1) * 3)) {
 	return ENOMEM;
@@ -219,7 +220,7 @@ int mddl_mallocater_init_obj(mddl_mallocater_t *const self_p, void * const buf, 
 
     IFDBG5THEN {
 	    DMSG( "%s : self_p=%p buf=%p bufsiz=%llu, &self_p->base=%p" EOL_CRLF,
-		__func__, self_p, buf, bufsiz, &(self_p->base));
+		__func__, self_p, buf, (unsigned long long)bufsiz, &(self_p->base));
     }
 
     result = region_pointer_check(self_p, h);
