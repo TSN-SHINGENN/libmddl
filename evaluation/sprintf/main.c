@@ -47,7 +47,12 @@ main(int ac, char **av)
         len = mddl_printf("%% %d %c %d %s %d buf=%p\n", a, (int)n, b, txt, a, buf);
 	printf("len=%llu\n", (unsigned long long)len);
 
-//        mddl_printf("%f %f %f\n", d[0], d[1], d[2]);
+	len = sprintf(buf, "%f %f %f\n", d[0], d[1], d[2]);
+	printf("float sprintf=%s",buf);
+	printf("len=%llu\n", (unsigned long long)len);
+
+        len = mddl_printf("%f %f %f\n", d[0], d[1], d[2]);
+	printf("len=%llu\n", (unsigned long long)len);
     }
 
     return 0;

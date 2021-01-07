@@ -160,7 +160,7 @@ static const char * const own_x2a_upper_str = "0123456789ABCDEFGHIJKLMNOPQRSTUVW
 
 
 #ifdef USE_FLOAT_FORMAT
-static double PRECISION = 0.00001;
+static double PRECISION = 0.000001;
 /**
  * Double to ASCII
  */
@@ -269,7 +269,7 @@ static int put_float(const xtoa_output_method_t *const method_p, const float f, 
     const putchar_callback_ptr_t _putchar_cb =  method_p->_putchar_cb;
     char *bufp = method_p->buf;
 
-    if( field_length < 80 ) {
+    if(!(field_length < 80) ) {
 	return -1;
     }
 
